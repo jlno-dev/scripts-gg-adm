@@ -1,0 +1,112 @@
+# 1 Environnement   : DEV/RCT/PRD
+# 2 Connecteur      : DB(extrObjet, replication de donnees dans/entre db)  / JMS (Envoie de messages sur RabbitMQueue)
+# 3 nomcomposant     : Sert a identifier de facon unique chaque ligne, represente souvent le nom du parametrage GG
+#                EYPLN001=> extracteur defini dans .../DataExtractor/dirprm
+# 4 Objet           : EXTRACT, REPLICAT, DUMP, BINARIES
+# 5 Projet          : Nom du projet associe, YOUPLAN est le 1er projet demarre
+# 6 GGHome          : repertoire des BINARIESs pour goldengate
+# 7 OHOME           : repertoire des BINARIESs db oracle dans le cas Type=DB
+# 8 Serveur         : serveur sur lesquels sont définies chaques lignes, permet de filtrer en fonction
+#                 du serveur sur lequel on est connecte.
+# 9 Base            : Base contenant les schemas
+# 10 Schema         : Schema contenant les objets
+# 11 schema adm     : Compte/schema admin
+# 12 Ordre          : ordre d'arret/redemarrage
+# 13 A monitorer    : Y/N
+
+ENV
+DEV:BIGDATA:BigDataBin_ALLBIRDS:BINARIES:ALLBIRDS:/app/oracle/product/ogg.12/Kafka:/app/oracle/product/ogg.12/Kafka/JDK8/jdk1.8.0_181:eufrdopbus001:-:-:-:-1:N
+# -----------------------------------------------------------------------------
+# Environnements definis en RECETTE
+# Environnements definis en RECETTE
+RCT:DB:DBBin_BUS:BINARIES:BUS:/app/oracle/product/ogg.12/Db.Bus:/app/oracle/product/11.2.0.4/dbhome_1:eufrtopbus001:-:-:-:-1:N
+#RCT:DB:DBBin_BUS19c:BINARIES:BUS19c:/app/oracle/product/ogg.12/Db.Bus.Oracle19c:/app/oracle/product/19.3.0/dbhome_1:eufrtopbus001:-:-:-:-1:N
+RCT:DB19c:DB19cBin_BUS:BINARIES:BUS:/app/oracle/product/ogg.12/Db.Bus.Oracle19c:/app/oracle/product/19.3.0/dbhome_1:eufrtopbus001:-:-:-:-1:N
+RCT:DB:DBBin_ALLBIRDS:BINARIES:ALLBIRDS:/app/oracle/product/ogg.12/Db.Allbirds.Oracle19c:/app/oracle/product/19.3.0/dbhome_1:eufrtopbus001:-:-:-:-1:N
+RCT:JMS:JMSBin_BUS:BINARIES:BUS:/app/oracle/product/ogg.12/Broker:/app/oracle/product/ogg.12/Broker/JDK8/jdk1.8.0_181:eufrtopbus001:-:-:-:-1:N
+RCT:BIGDATA:BigDataBin_ALLBIRDS:BINARIES:ALLBIRDS:/app/oracle/product/ogg.12/Kafka:/app/oracle/product/ogg.12/Kafka/JDK8/jdk1.8.0_181:eufrtopbus001:-:-:-:-1:N
+
+
+OBJ
+DEV:JMS:EYP001B1:EXTRACT:YOUPLAN:/app/oracle/product/ogg.12/Broker:/app/oracle/product/ogg.12/Broker/JDK8/jdk1.8.0_181:eufrdopbus001:STAGING:OSM001:OGGADM:1:N
+RCT:DB:EYP001S1:EXTRACT:YOUPLAN:/app/oracle/product/ogg.12/Db.Bus:/app/oracle/product/11.2.0.4/dbhome_1:eufrtopbus001:OSM001:VB:OGGADM:1:Y
+
+
+parametres_env : RCT 
+Connecteur      : DB(extrObjet, replication de donnees dans/entre db)  / JMS (Envoie de messages sur RabbitMQueue)
+nomcomposant     : Sert a identifier de facon unique chaque ligne, represente souvent le nom du parametrage GG
+Objet           : EXTRACT, REPLICAT, DUMP, BINARIES
+Projet          : Nom du projet associe, YOUPLAN est le 1er projet demarre
+GGHome          : repertoire des BINARIESs pour goldengate
+OHOME           : repertoire des BINARIESs db oracle dans le cas Type=DB
+Serveur         : serveur sur lesquels sont définies chaques lignes, permet de filtrer en fonction
+Base            : Base contenant les schemas
+Schema         : Schema contenant les objets
+schema adm     : Compte/schema admin
+Ordre          : ordre d'arret/redemarrage
+monitorer    : Y/N
+
+
+parametres
+nom
+ty
+
+obj_gg
+nom
+type
+type_param, nom_param_1, val_param_1
+nom_param_2, val_param_2
+.
+.
+.
+nom_param_n, val_param_n
+
+nom_param, valeur
+
+Extract EAB001S1
+UserIdAlias OGGADM_OSM001
+TranlogOptions IntegratedParams (max_sga_size 256)
+Exttrail ./dirdat/ALLBIRDS/SOURCE/OSM001/r1
+
+
+Extract EAB001T1
+UserIdAlias OGGADM_ALLBIRDS
+--SETENV(ORACLE_SID = "REC-ALLBIRDS")
+TranlogOptions IntegratedParams (max_sga_size 256)
+--Exttrail ./dirdat/ALLBIRDS/STAGING/OSM001/r1, format release 12.2
+Exttrail ./dirdat/ALLBIRDS/STAGING/OSM001/r1
+LOGALLSUPCOLS
+UPDATERECORDFORMAT COMPACT
+
+
+Replicat RAB001T1
+DBOPTIONS INTEGRATEDPARAMS(parallelism 6)
+
+DiscardFile ./dirrpt/RAB001T1.dsc, Purge, MEGABYTES 100
+DISCARDROLLOVER AT 18:30
+UserIdAlias OGGADM_ALLBIRDS
+
+
+TYPE_PARAMETRE_R
+	id_type_param
+	lib_type_param
+(1,'environnement'), (2,'parametre_goldengate');
+
+liste_params
+	id_liste_liste_param
+	id_type_param
+	nom
+
+parametres_e 
+id_param
+nom 
+
+
+liste_param_a
+id_param
+id_liste_liste_param
+valeur
+
+
+
+

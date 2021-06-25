@@ -1,0 +1,79 @@
+----------------------------------------------------------
+ 1. charger le fichier de demande
+
+
+ 2. Alimenter les tables de demandes (tables, colonnes, code ...)
+
+ALTER SESSION SET current_schema=OGGDMDE;
+
+declare
+	nomprojet oggdmde.projet_r.nom_projet%type := 'ALLBIRDS';
+	nomBaseCible varchar2(30) := 'ALLBIRDS';
+	pcommentaire  oggdmde.demandes_e.commentaire%type;
+	listeBases varchar2(1024):='ALLBIRDS';
+	listeSchemas varchar2(2048):='OSMEXP';
+	listeTables varchar2(16000):='*';
+	siCreerDmde boolean := false;
+	siGenListeDmde boolean := true;
+begin 
+    IF (siCreerDmde) THEN
+        oggdmde.pkg_ogg_demandes.creer_demandes(nomProjet, nomBaseCible, pCommentaire);
+    END IF;
+    IF (siGenListeDmde) THEN
+        oggdmde.pkg_ogg_demandes.GENERER_LISTE_DMDE_A_TRAITER(listeBases, listeSchemas, listeTables);
+    END IF;
+end;
+/
+
+
+ 3. Generation des fichiers  pour maj_structure; makefile, sql
+	declare
+	begin 
+		oggdmde.PKG_OGG_DEPLOIEMENT.DEPLOYER_VIA_SQL();
+
+	end;
+	/
+
+
+ 3. Generation des fichiers  pour maj_structure; makefile, sql
+	declare
+	begin 
+		oggdmde.PKG_OGG_DEPLOIEMENT.DEPLOYER_VIA_MAKEFILE();
+
+	end;
+	/
+
+
+./etape -s ALLBIRDS -f vider_dmde_tables.sql -u OGGADM -p 'OSMEXP'
+
+ pour vérfier si ok on simule la tache:
+make SID=ALLBIRDS -f allbirds_osmapm_modification_structure.makefile -n
+
+lancement
+make SID=ALLBIRDS -f allbirds_osmapm_modification_structure.makefile  -j 4
+
+ apres maj structure, on genere les sql pour initload
+./etape -s ALLBIRDS -f deploie.gen_init.sql -u OGGADM -p 'OSM001'
+
+. oggenv -p ALLBIRDS -e RCT -c DB
+ggsci obey  /home/oracle/admin/goldengate/admin/livraison/scripts_prm_sql/allbirds.add_trandata.obey
+
+ajout pour l'extraction des tables
+cat allbirds.osm001.extr.*.prm >> /ogg/dirprm/Db.Allbirds/ALLBIRDS/SOURCE/OSM001/EAB001S1.prm
+
+ REPLICAT: génération des fichiers pour chaque tables : 
+./etape -s ALLBIRDS -f deploie.gen_repli.sql -u OGGADM -p 'OSM001'
+echo "" > allbirds.osm001.replication.prm; for fic in $(ls allbirds.osm001.repl.*.prm |sort); do cat $fic >> allbirds.osm001.replication.prm; done
+
+echo "" > allbirds.osm001.replication.prm
+for fic in $(ls allbirds.osm001.repl.*.prm |sort)
+do 
+cat $fic >> allbirds.osm001.replication.prm
+echo "-- ------------------------------------" >> allbirds.osm001.replication.prm
+echo "-- ------------------------------------" >> allbirds.osm001.replication.prm
+done
+
+AVANT DE FAIRE CETTE MANIP recuperer le parametrage de RAB001T1.prm
+cp allbirds.osm001.replication.prm /ogg/dirprm/Db.Allbirds/ALLBIRDS/STAGING/OSM001/RAB001T1.prm
+
+./allbirds.osm001.initial_load.sh

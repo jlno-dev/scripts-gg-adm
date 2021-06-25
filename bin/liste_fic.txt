@@ -1,0 +1,10 @@
+oggdmde.creer_tables.sql
+oggdmde.creer_vues.sql
+oggdmde.init_tables.sql
+admin.correction_message_erreur_r.sql
+oggdmde.pkg_ogg_commun.sql
+oggdmde.pkg_ogg_config.sql
+oggdmde.pkg_ogg_generer_fichiers.sql
+oggdmde.pkg_ogg_demandes.sql
+oggdmde.pkg_ogg_deploiement.sql
+#tout.sys.creer_uti_oggdmde.sql
